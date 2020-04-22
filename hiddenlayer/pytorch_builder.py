@@ -42,7 +42,7 @@ def pytorch_id(node):
     """Returns a unique ID for a node."""
     # After ONNX simplification, the scopeName is not unique anymore
     # so append node outputs to guarantee uniqueness
-    return node.scopeName() + "/outputs/" + "/".join([o.uniqueName() for o in node.outputs()])
+    return node.scopeName() + "/outputs/" + "/".join(["{}".format(o.unique()) for o in node.outputs()])
 
 
 def get_shape(torch_node):
@@ -67,9 +67,8 @@ def import_graph(hl_graph, model, args, input_names=None, verbose=False):
     # TODO: add input names to graph
 
     # Run the Pytorch graph to get a trace and generate a graph from it
-    trace, out = torch.jit.get_trace_graph(model, args)
-    torch.onnx._optimize_trace(trace, torch.onnx.OperatorExportTypes.ONNX)
-    torch_graph = trace.graph()
+    trace, out = torch.jit._get_trace_graph(model, args)
+    torch_graph = torch.onnx._optimize_trace(trace, torch.onnx.OperatorExportTypes.ONNX)
 
     # Dump list of nodes (DEBUG only)
     if verbose:
